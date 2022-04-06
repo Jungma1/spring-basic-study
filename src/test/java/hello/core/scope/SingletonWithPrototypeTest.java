@@ -1,6 +1,7 @@
 package hello.core.scope;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Scope;
 
@@ -29,25 +30,30 @@ public class SingletonWithPrototypeTest {
 
         ClientBean clientBean1 = ac.getBean(ClientBean.class);
         int count1 = clientBean1.logic();
-        assertThat(count1).isEqualTo(1); // 0 + 1 = 1
+        assertThat(count1).isEqualTo(1);
 
-        /*
-            clientBean 이 내부에 가지고 있는 프로토타입 빈은 이미 과거에 주입이 끝난 빈임
-         */
         ClientBean clientBean2 = ac.getBean(ClientBean.class);
         int count2 = clientBean1.logic();
-        assertThat(count2).isEqualTo(2); // 1 + 1 = 2
+        assertThat(count2).isEqualTo(1);
     }
 
     @Scope("singleton")
     static class ClientBean {
-        private final PrototypeBean prototypeBean; // 생성시점에 주입
 
-        public ClientBean(PrototypeBean prototypeBean) { // 프로토타입 빈을 생성 후 할당
-            this.prototypeBean = prototypeBean;
+        private final ObjectProvider<PrototypeBean> prototypeBeanProvider;
+
+        public ClientBean(ObjectProvider<PrototypeBean> prototypeBeanProvider) {
+            this.prototypeBeanProvider = prototypeBeanProvider;
         }
 
+//        private final Provider<PrototypeBean> prototypeBeanProvider;
+//
+//        public ClientBean(Provider<PrototypeBean> prototypeBeanProvider) {
+//            this.prototypeBeanProvider = prototypeBeanProvider;
+//        }
+
         public int logic() {
+            PrototypeBean prototypeBean = prototypeBeanProvider.getObject();
             prototypeBean.addCount();
             int count = prototypeBean.getCount();
             return count;
@@ -68,12 +74,12 @@ public class SingletonWithPrototypeTest {
 
         @PostConstruct
         public void init() {
-            System.out.println("PrototypeBean.init " + this.count);
+            System.out.println("PrototypeBean.init " + this);
         }
 
         @PreDestroy
         public void destroy() {
-            System.out.println("PrototypeBean.destroy " + this.count);
+            System.out.println("PrototypeBean.destroy " + this);
         }
     }
 }
