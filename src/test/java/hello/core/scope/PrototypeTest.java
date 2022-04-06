@@ -15,7 +15,7 @@ public class PrototypeTest {
         프로토타입 빈)
         - 스프링 컨테이너에 요청할 때 마다 생성됨
         - 스프링 컨테이너는 프로토타입 빈의 생성, 의존관계, 초기화까지만 관여함 (종료 메서드 호출 x)
-        
+
      */
 
     @Test
@@ -34,7 +34,6 @@ public class PrototypeTest {
 
     @Scope("prototype")
     static class PrototypeBean {
-
         @PostConstruct
         public void init() {
             System.out.println("PrototypeBean.init");
